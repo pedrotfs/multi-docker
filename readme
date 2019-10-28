@@ -1,0 +1,9 @@
+Hi, this is a docker lesson trying to do a fibonacci calculator with a lot of not necessary steps.
+It's overly complicated by definition to force a larger complexity to explore docker further.
+for example, fibonacci is implemented using recursion, and the results use both redis and postgres.
+the front uses react, the back end uses express and node.
+
+the lesson I'm following is https://www.udemy.com/course/docker-and-kubernetes-the-complete-guide/learn/lecture/11437202#overview
+so far it's been great and I can't recommend this course enough if you wanna learn docker.
+
+node_modules will not be commited. generate yours.
