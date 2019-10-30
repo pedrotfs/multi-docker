@@ -7,3 +7,11 @@ the lesson I'm following is https://www.udemy.com/course/docker-and-kubernetes-t
 so far it's been great and I can't recommend this course enough if you wanna learn docker.
 
 node_modules will not be commited. generate yours.
+
+script:
+  - docker run -e CI=true USERNAME/react-test npm test
+
+  instead of 
+
+  script:
+  - docker run USERNAME/react-test npm test -- --coverage
