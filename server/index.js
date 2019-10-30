@@ -1,64 +1,70 @@
 const keys = require('./keys');
 
+// Express App Setup
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const app = express(); //receives http requests
 
-app.use(cors()); //cross origin resource something
+const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 
+// Postgres Client Setup
 const { Pool } = require('pg');
 const pgClient = new Pool({
-    host: keys.pgHost,
-    port: keys.pgPort,
-    user: keys.pgUser,
-    database: keys.pgDatabase,
-    password: keys.pgPassword
+  user: keys.pgUser,
+  host: keys.pgHost,
+  database: keys.pgDatabase,
+  password: keys.pgPassword,
+  port: keys.pgPort
 });
+pgClient.on('error', () => console.log('Lost PG connection'));
 
-pgClient.on('error', () => console.log('Connection to posgres lost.'));
-pgClient.query('CREATE TABLE IF NOT EXISTS values(number INT)').catch(err => {
-    console.log(err);
-});
+pgClient
+  .query('CREATE TABLE IF NOT EXISTS values (number INT)')
+  .catch(err => console.log(err));
 
+// Redis Client Setup
 const redis = require('redis');
-
 const redisClient = redis.createClient({
-    host: keys.redisHost,
-    port: keys.redisPort,
-    retry_strategy: () => 1000
+  host: keys.redisHost,
+  port: keys.redisPort,
+  retry_strategy: () => 1000
 });
-
 const redisPublisher = redisClient.duplicate();
 
+// Express route handlers
+
 app.get('/', (req, res) => {
-    res.send('Connected.');
+  res.send('Hi');
 });
 
 app.get('/values/all', async (req, res) => {
-    const values = await pgClient.query('SELECT * FROM VALUES');
-    res.send(values.rows);
-    console.log('values retrieved: ' + values.rowCount);
+  const values = await pgClient.query('SELECT * from values');
+
+  res.send(values.rows);
 });
 
-app.get('/values/currents', async (req, res) => {
-    redisClient.hgetall('values', (err, values) => { //redis dont have promise suport otb
-        res.send(values);
-    });
+app.get('/values/current', async (req, res) => {
+  redisClient.hgetall('values', (err, values) => {
+    res.send(values);
+  });
 });
 
 app.post('/values', async (req, res) => {
-    const index = req.body.index;
-    if(parseInt(index) > 40) {
-        return res.status(422).send('please use a index lower than 40.');
-    }
-    redisClient.hset('values', index, 'Nothing yet.');
-    redisPublisher.publish('insert', index);
-    pgClient.query('INSERT INTO values(number) values($1)', [index]);
-    res.send({working: true});
+  const index = req.body.index;
+
+  if (parseInt(index) > 40) {
+    return res.status(422).send('Index too high');
+  }
+
+  redisClient.hset('values', index, 'Nothing yet!');
+  redisPublisher.publish('insert', index);
+  pgClient.query('INSERT INTO values(number) VALUES($1)', [index]);
+
+  res.send({ working: true });
 });
 
 app.listen(5000, err => {
-    console.log('Listening');
+  console.log('Listening');
 });
