@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t pedrotfs/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+  - docker build -t pedrotfs/multi-client ./client
+  - docker build -t pedrotfs/multi-server ./server
+  - docker build -t pedrotfs/multi-worker ./worker
+  - docker build -t pedrotfs/multi-nginx ./nginx
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push pedrotfs/multi-client
+  - docker push pedrotfs/multi-server
+  - docker push pedrotfs/multi-worker
+  - docker push pedrotfs/multi-nginx
