@@ -20,3 +20,17 @@ after_success:
   - docker push pedrotfs/multi-server
   - docker push pedrotfs/multi-worker
   - docker push pedrotfs/multi-nginx
+
+#deploy:
+#  provider: elasticbeanstalk
+#  region: us-west-1
+#  app: multi-docker
+#  env: MultiDocker-env
+#  bucket_name: elasticbeanstalk-us-west-1-342342342342
+#  bucket_path: multi-docker
+#  on:
+#    branch: master
+#  access_key_id:
+#    secure: $AWS_ACCESS_KEY
+#  secret_access_key:
+#    secure: $AWS_SECURE_KEY
